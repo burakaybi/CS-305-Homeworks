@@ -1,0 +1,164 @@
+%{
+int count = 1;
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+char *correctform(char string[], int len){
+    char str[len+1];
+    
+    int x = 0;
+    if (string[0] == '-'){
+        str[0] = '-';
+        x++;
+    }
+    
+    int i = 0;
+    while(string[i] == '0' || string[i] == '-'){
+        i++;
+    }
+    
+    if(string[i] == '.' || string[i] == 'E' || i == len){
+        str[x] = '0';
+        x++;
+    }
+    
+    
+    int m = i;
+    bool haveDOT = false;  bool haveE = false;
+    while(m < len){
+        if(string[m] == '.'){
+            haveDOT = true;
+        }
+        if(string[m]=='E'){
+            haveE = true;
+        }
+        m++;
+    }
+    
+    while(string[i] != '.' && string[i] != 'E' && i < len){
+        str[x] = string[i];
+        i++; x++;
+    }
+
+    
+    if (haveDOT == true){
+        str[x] = string[i];
+        x++; i++;
+        
+        while (string[i] == '0') {
+            str[x] = string[i];
+            i++; x++;
+        }
+        while (string[i] != '0' && i <len){
+            str[x] = string[i];
+            i++; x++;
+        }
+        while(string[i] == '0' && i<len){
+            i++;
+        }
+    }
+    
+    if (haveE == true){
+        str[x] = string[i];
+        x++; i++;
+        
+        if (string[i] == '-'){
+            str[x] = '-';
+            x++; i++;
+        }
+        
+        while(string[i] == '0' && i <len){
+            i++;
+        }
+        
+        while (i < len){
+            str[x] = string[i];
+            x++; i++;
+        }
+    }
+    
+    str[x] = '\0';
+    return str;
+}
+%}
+%x comment
+tINT "int"
+tREAL "real"
+tIF "if"
+tENDIF "endif"
+tVECTOR "vector"
+tMATRIX "matrix"
+tTRANSPOSE "transpose"
+tCOMMA ","
+tLE "<="
+tGE ">="
+tASSIGNM "="
+tPLUS "+"
+tSTAR "*"
+tEQUL "=="
+tLT "<"
+tGT ">"
+tAND "&&"
+tMINUS "-"
+tDIV "/"
+tSEMI ";"
+tINEQ "!="
+LEFTPAR "("
+LEFTBRAC "["
+DOTPRODUCT ".*"
+RIGHTBRAC "]"
+RIGHTPAR ")"
+ORLOGIC "||"
+tIDENT [A-Za-z_][A-Za-z0-9_]*
+tPOSREAL [0-9]+\.[0-9]+((E("-"?)[0-9]*[1-9]+[0-9]*)|([0-9]*))
+tNEGREAL -[0-9]+\.[0-9]+((E("-"?)[0-9]*[1-9]+[0-9]*)|([0-9]*))
+tPOSINT [0-9]+E?[0-9]*
+tNEGINT -[0-9]+E?[0-9]*
+%%
+<comment>"\n" {
+    count++;
+    BEGIN(INITIAL);
+}
+\n {count++;}
+[ \t] {}
+"//" {BEGIN(comment);}
+<comment>. {}
+{tINT} {printf("%d tINT\n", count);}
+{tREAL} {printf("%d tREAL\n", count);}
+{tIF} {printf("%d tIF\n", count);}
+{tENDIF} {printf("%d tENDIF\n", count); }
+{tVECTOR} {printf("%d tVECTOR\n", count); }
+{tMATRIX} {printf("%d tMATRIX\n", count); }
+{tTRANSPOSE} {printf("%d tTRANSPOSE\n", count); }
+{tCOMMA} {printf("%d tCOMMA\n", count); }
+{LEFTPAR} {printf("%d tLPAR\n", count); }
+{tASSIGNM} {printf("%d tASSIGNM\n", count); }
+{tPLUS} {printf("%d tPLUS\n", count); }
+{tSTAR} {printf("%d tSTAR\n", count); }
+{tEQUL} {printf("%d tEQUL\n", count);}
+{tLT} {printf("%d tLT\n", count); }
+{tGT} {printf("%d tGT\n", count); }
+{LEFTBRAC} {printf("%d tLBRAC\n", count); }
+{tAND} {printf("%d tAND\n", count); }
+{DOTPRODUCT} {printf("%d tDOTPROD\n", count);}
+{RIGHTPAR} {printf("%d tRPAR\n", count);}
+{tMINUS} {printf("%d tMINUS\n", count);}
+{tDIV} {printf("%d tDIV\n", count);}
+{tSEMI} {printf("%d tSEMI\n", count);}
+{tINEQ} {printf("%d tINEQ\n", count); }
+{tLE} {printf("%d tLE\n", count);}
+{tGE} {printf("%d tGE\n", count);}
+{RIGHTBRAC} {printf("%d tRBRAC\n", count); }
+{ORLOGIC} {printf("%d tOR\n", count);}
+{tIDENT} {printf("%d tIDENT (%s)\n", count, yytext); }
+{tPOSREAL} {printf("%d tPOSREAL (%s) (%s)\n", count, yytext, correctform(yytext, yyleng));}
+{tNEGREAL} {printf("%d tNEGREAL (%s) (%s)\n", count, yytext, correctform(yytext, yyleng)); }
+{tPOSINT} {printf("%d tPOSINT (%s) (%s)\n", count, yytext, correctform(yytext, yyleng));}
+{tNEGINT} {printf("%d tNEGINT (%s) (%s)\n", count, yytext, correctform(yytext, yyleng));}
+%%
+int main(){
+    yylex();
+    }
+
